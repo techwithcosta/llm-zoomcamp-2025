@@ -215,3 +215,13 @@ def search(query, limit=1):
 
 search(query, limit=1).points[0].score
 # %%
+# http://localhost:6333/dashboard#/collections/zoomcamp-rag/visualize
+
+{
+  "limit": 948,
+  "color_by": {
+    "payload": "course"
+  }
+}
+
+# RUN
