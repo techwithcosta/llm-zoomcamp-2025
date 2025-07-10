@@ -45,8 +45,28 @@ load_info = pipeline.run(zoomcamp_data())
 print(pipeline.last_trace)
 #%%
 # Question 3. Embedding model (1 point)
+
+collection_name = f"{dataset_name}_zoomcamp_data"
+
 import json
 with open(f'{qd_path}/meta.json', 'r') as file:
     data = json.load(file)
-print(list(data["collections"][f"{dataset_name}_zoomcamp_data"]["vectors"].keys())[0])
+
+print(list(data["collections"][collection_name]["vectors"].keys())[0])
+# %%
+from qdrant_client import QdrantClient
+
+# 1. Connect to local Qdrant
+client = QdrantClient(path="db.qdrant")  # path to your local DB
+#%%
+# Check if vectors have been generated
+points = client.scroll(
+    collection_name=collection_name,
+    limit=5,
+    with_payload=True,
+    with_vectors=True
+)
+
+for p in points[0]:
+    print(p.vector)
 # %%
