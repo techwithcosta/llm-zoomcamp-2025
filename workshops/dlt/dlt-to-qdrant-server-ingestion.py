@@ -1,5 +1,3 @@
-# zoomcamp_loader.py
-
 import dlt
 import requests
 from dlt.destinations.adapters import qdrant_adapter
