@@ -54,11 +54,15 @@ with open(f'{qd_path}/meta.json', 'r') as file:
 
 print(list(data["collections"][collection_name]["vectors"].keys())[0])
 # %%
+# Additional step to confirm that embeddings have not been generated
+# Vectors are generated when the ingestion is done using "qdrant_adapter"
+# This was tested in dlt-to-qdrant-server.py
+
 from qdrant_client import QdrantClient
 
-# 1. Connect to local Qdrant
-client = QdrantClient(path="db.qdrant")  # path to your local DB
-#%%
+# Connect to local Qdrant
+client = QdrantClient(path="db.qdrant") # path to your local DB
+
 # Check if vectors have been generated
 points = client.scroll(
     collection_name=collection_name,
@@ -69,4 +73,5 @@ points = client.scroll(
 
 for p in points[0]:
     print(p.vector)
+# Empty vectors!
 # %%
