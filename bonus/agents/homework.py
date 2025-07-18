@@ -18,19 +18,21 @@ def get_weather(city: str) -> float:
 get_weather_tool = {
     "type": "function",
     "name": "get_weather",
-    "description": "Get city temperature",
+    "description": "Get city temperature in Celsius degrees from weather database",
     "parameters": {
         "type": "object",
         "properties": {
             "city": {
                 "type": "string",
-                "description": "The city for which we want to get its temperature"
+                "description": "The city for which we want to get the temperature"
             }
         },
         "required": ["city"],
         "additionalProperties": False
     }
 }
+
+print("city")
 #%%
 def set_weather(city: str, temp: float) -> None:
     city = city.strip().lower()
@@ -42,23 +44,25 @@ def set_weather(city: str, temp: float) -> None:
 set_weather_tool = {
     "type": "function",
     "name": "set_weather",
-    "description": "Set city temperature",
+    "description": "Add city temperature to weather database",
     "parameters": {
         "type": "object",
         "properties": {
             "city": {
                 "type": "string",
-                "description": "The city for which we want to set its temperature"
+                "description": "The city for which we want to add the temperature"
             },
             "temp": {
-                "type": "float",
-                "description": "The city temperature in degrees Celsius"
+                "type": "number",
+                "description": "The city temperature in Celsius degrees"
             }
         },
         "required": ["city", "temp"],
         "additionalProperties": False
     }
 }
+
+print(set_weather_tool)
 #%%
 # Get chat_assistant.py
 
@@ -79,71 +83,47 @@ AZURE_OPENAI_ENDPOINT = os.environ.get('AZURE_OPENAI_ENDPOINT')
 AZURE_OPENAI_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
 AZURE_OPENAI_DEPLOYMENT = os.environ.get('AZURE_OPENAI_DEPLOYMENT')
 
-# os.environ['AZURE_OPENAI_API_KEY'] = os.environ.get('AZURE_OPENAI_API_KEY')
-# os.environ['AZURE_OPENAI_ENDPOINT'] = os.environ.get('AZURE_OPENAI_ENDPOINT')
-# os.environ['AZURE_OPENAI_API_VERSION'] = os.environ.get('AZURE_OPENAI_API_VERSION')
-# os.environ['AZURE_OPENAI_DEPLOYMENT'] = os.environ.get('AZURE_OPENAI_DEPLOYMENT')
-
-# print(os.environ['AZURE_OPENAI_API_KEY'])
-# print(os.environ['AZURE_OPENAI_ENDPOINT'])
-# print(os.environ['AZURE_OPENAI_API_VERSION'])
-# print(os.environ['AZURE_OPENAI_DEPLOYMENT'])
-
 # Initialize Azure OpenAI client with key-based authentication
 client = AzureOpenAI(
     api_version=AZURE_OPENAI_API_VERSION,
     azure_endpoint=AZURE_OPENAI_ENDPOINT,
     api_key=AZURE_OPENAI_API_KEY
 )
-
-# Prepare the chat prompt
-messages = [
-    {
-        "role": "developer",
-        "content": [
-            {
-                "type": "text",
-                "text": "You are an AI assistant that helps people find information."
-            }
-        ]
-    }
-]
-
-# Generate the completion
-completion = client.chat.completions.create(
-    model=AZURE_OPENAI_DEPLOYMENT,
-    messages=messages,
-    max_completion_tokens=100000,
-    stop=None,
-    stream=False
-)
-
-completion.choices[0].message.content
 #%%
 # Test functions
 
 import chat_assistant
 
+tools = chat_assistant.Tools()
+tools.add_tool(get_weather, get_weather_tool)
+tools.add_tool(set_weather, set_weather_tool)
+
+tools.get_tools()
+
 developer_prompt = """
-You're a weather assistant. 
-You're given a city and your task is to output its current temperature in degrees Celsius.
-
-At the end of each response, ask the user a follow up question based on your answer.
+You're a weather assistant.
+You have access to a database with current city temperatures in Celsius degrees.
+You can also add new temperatures to the database if the user agrees.
 """.strip()
-
-# Use the known weather data if your own knowledge is not sufficient to answer.
 
 chat_interface = chat_assistant.ChatInterface()
 
 chat = chat_assistant.ChatAssistant(
+    tools=tools,
     developer_prompt=developer_prompt,
     chat_interface=chat_interface,
-    client=client
+    client=client,
+    model=AZURE_OPENAI_DEPLOYMENT
 )
 
 chat.run()
 #%%
 # Question 3. FastMCP version (1 point)
+
+# !pip install fastmcp
+
+import fastmcp
+print(fastmcp.__version__)
 #%%
 # Question 4. MCP Server transport (1 point)
 #%%
