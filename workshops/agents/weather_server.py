@@ -1,4 +1,5 @@
 # weather_server.py
+
 from fastmcp import FastMCP
 import random
 

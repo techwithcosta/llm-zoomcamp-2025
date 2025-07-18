@@ -1,10 +1,17 @@
 # asyncio_fastmcp.py
 
+import os
 import asyncio
 from fastmcp import Client
 
+# Server script name
+server_script = "weather_server.py"
+
+# Get the absolute path of the running script
+script_path = os.path.dirname(os.path.realpath(__file__))
+
 async def main():
-    async with Client("bonus/agents/weather_server.py") as mcp_client:
+    async with Client(f"{script_path}\\{server_script}") as mcp_client:
         tools = await mcp_client.list_tools()
         print(f"Available tools: {tools}")
 
