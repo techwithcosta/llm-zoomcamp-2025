@@ -141,4 +141,8 @@ print("""{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"20.
 # Implemented in script asyncio_fastmcp.py
 print("""Available tools: [Tool(name='get_weather', title=None, description='Retrieves the temperature for a specified city.\n\nParameters:\n    city (str): The name of the city for which to retrieve weather data.\n\nReturns:\n    float: The temperature associated with the city.', inputSchema={'properties': {'city': {'title': 'City', 'type': 'string'}}, 'required': ['city'], 'type': 'object'}, outputSchema={'properties': {'result': {'title': 'Result', 'type': 'number'}}, 'required': ['result'], 'title': '_WrappedResult', 'type': 'object', 'x-fastmcp-wrap-result': True}, annotations=None, meta=None), Tool(name='set_weather', title=None, description="Sets the temperature for a specified city.\n\nParameters:\n    city (str): The name of the city for which to set the weather data.\n    temp (float): The temperature to associate with the city.\n\nReturns:\n    str: A confirmation string 'OK' indicating successful update.", inputSchema={'properties': {'city': {'title': 'City', 'type': 'string'}, 'temp': {'title': 'Temp', 'type': 'number'}}, 'required': ['city', 'temp'], 'type': 'object'}, outputSchema=None, annotations=None, meta=None)]""")
 
+#%%
+# Optional: Using tools from the MCP server
+# !wget https://raw.githubusercontent.com/alexeygrigorev/rag-agents-workshop/refs/heads/main/mcp_client.py
+# Implemented in script mcp_client_chat.py
 # %%
