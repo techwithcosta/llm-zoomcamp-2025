@@ -90,7 +90,7 @@ client = AzureOpenAI(
     api_key=AZURE_OPENAI_API_KEY
 )
 #%%
-# Test functions
+# Test weather assistant
 
 import chat_assistant
 
