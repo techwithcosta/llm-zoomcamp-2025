@@ -126,7 +126,17 @@ import fastmcp
 print(fastmcp.__version__)
 #%%
 # Question 4. MCP Server transport (1 point)
+
+# Implemented in script weather_server.py
+# Starting MCP server 'Demo 🚀' with transport 'stdio'
+print('stdio')
 #%%
 # Question 5. MCP communication (1 point)
+
+# Implemented in script weather_server.py
+print("""{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"20.0"}],"structuredContent":{"result":20.0},"isError":false}}""") 
 #%%
 # Question 6. MCP Client tools (1 point)
+
+# Implemented in script asyncio_fastmcp.py
+print("""Available tools: [Tool(name='get_weather', title=None, description='Retrieves the temperature for a specified city.\n\nParameters:\n    city (str): The name of the city for which to retrieve weather data.\n\nReturns:\n    float: The temperature associated with the city.', inputSchema={'properties': {'city': {'title': 'City', 'type': 'string'}}, 'required': ['city'], 'type': 'object'}, outputSchema={'properties': {'result': {'title': 'Result', 'type': 'number'}}, 'required': ['result'], 'title': '_WrappedResult', 'type': 'object', 'x-fastmcp-wrap-result': True}, annotations=None, meta=None), Tool(name='set_weather', title=None, description="Sets the temperature for a specified city.\n\nParameters:\n    city (str): The name of the city for which to set the weather data.\n    temp (float): The temperature to associate with the city.\n\nReturns:\n    str: A confirmation string 'OK' indicating successful update.", inputSchema={'properties': {'city': {'title': 'City', 'type': 'string'}, 'temp': {'title': 'Temp', 'type': 'number'}}, 'required': ['city', 'temp'], 'type': 'object'}, outputSchema=None, annotations=None, meta=None)]""")
