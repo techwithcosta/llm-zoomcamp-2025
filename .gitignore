@@ -1,3 +1,4 @@
 qdrant_storage/
 db.qdrant/
 *.env
+__pycache__/
