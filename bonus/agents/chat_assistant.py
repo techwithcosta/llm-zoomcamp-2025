@@ -75,15 +75,16 @@ class ChatInterface:
 
 
 class ChatAssistant:
-    def __init__(self, tools, developer_prompt, chat_interface, client):
+    def __init__(self, tools, developer_prompt, chat_interface, client, model):
         self.tools = tools
         self.developer_prompt = developer_prompt
         self.chat_interface = chat_interface
         self.client = client
+        self.model = model
     
     def gpt(self, chat_messages):
         return self.client.responses.create(
-            model='gpt-4o-mini',
+            model=self.model,
             input=chat_messages,
             tools=self.tools.get_tools(),
         )
