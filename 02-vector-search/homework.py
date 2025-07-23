@@ -137,7 +137,7 @@ for course in documents_raw:
 
         point = models.PointStruct(
             id=id,
-            vector=models.Document(text=doc['text'], model=model_handle), #embed text locally with "jinaai/jina-embeddings-v2-small-en" from FastEmbed
+            vector=models.Document(text=doc['text'], model=model_handle),
             payload={
                 "text": doc['text'],
                 "section": doc['section'],
@@ -185,7 +185,7 @@ for course in documents_raw:
 
         point = models.PointStruct(
             id=id,
-            vector=models.Document(text=doc['question'] + ' ' + doc['text'], model=model_handle), #embed text locally with "jinaai/jina-embeddings-v2-small-en" from FastEmbed
+            vector=models.Document(text=doc['question'] + ' ' + doc['text'], model=model_handle),
             payload={
                 "text": doc['question'] + ' ' + doc['text'],
             } #save all needed metadata fields
@@ -199,11 +199,11 @@ client.upsert(
     points=points
 )
 
-def search(query, limit=1):
+def search(query, limit):
 
     results = client.query_points(
         collection_name=collection_name,
-        query=models.Document( #embed the query text locally with "BAAI/bge-small-en"
+        query=models.Document(
             text=query,
             model=model_handle 
         ),
