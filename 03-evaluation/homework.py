@@ -135,8 +135,145 @@ def search_function(q):
 evaluate_results = evaluate(ground_truth=ground_truth, search_function=search_function)
 print(evaluate_results['hit_rate'])
 # %%
+# Run qdrant container
+
+# !sudo docker run -p 6333:6333 -p 6334:6334 \
+#    -v "$(pwd)/03-evaluation/qdrant_storage:/qdrant/storage:z" \
+#    qdrant/qdrant
+# %%
 # Question 4. MRR Qdrant (1 point)
+
+from fastembed import TextEmbedding
+from qdrant_client import QdrantClient, models
+
+supported_models = TextEmbedding.list_supported_models()
+
+model_handle = "jinaai/jina-embeddings-v2-small-en"
+limit = 5
+
+for model in supported_models:
+    if model['model'] == model_handle:
+        EMBEDDING_DIMENSIONALITY = model['dim']
+
+# Define the collection name
+collection_name = "zoomcamp-evaluation-homework"
+
+# Create the collection with specified vector parameters
+client = QdrantClient("http://localhost:6333")
+
+client.recreate_collection(
+    collection_name=collection_name,
+    vectors_config=models.VectorParams(
+        size=EMBEDDING_DIMENSIONALITY,  # Dimensionality of the vectors
+        distance=models.Distance.COSINE  # Distance metric for similarity search
+    )
+)
+
+points = []
+id = 0
+
+for doc in documents:
+    text = doc['question'] + ' ' + doc['text']
+    point = models.PointStruct(
+        id=id,
+        vector=models.Document(text=text, model=model_handle),
+        payload={
+            "text": text,
+            "section": doc['section'],
+            "course": doc['course'],
+            "id": doc['id']
+        } #save all needed metadata fields
+    )
+    points.append(point)
+    id += 1
+
+client.upsert(
+    collection_name=collection_name,
+    points=points
+)
+
+# check collection at http://localhost:6333/dashboard
+
+from qdrant_client.models import Filter, FieldCondition, MatchValue
+
+# Search with filters
+def search_function(q):
+    results_tmp = client.query_points(
+        collection_name=collection_name,
+        query=models.Document(
+            text=q['question'],
+            model=model_handle
+        ),
+        query_filter=Filter(
+            must=[
+                FieldCondition(
+                    key="course",
+                    match=MatchValue(value=q['course'])
+                )
+            ]
+        ),
+        limit=limit, # top closest matches
+        with_payload=True #to get metadata in the results
+    )
+    results = []
+    for r in results_tmp.points:
+        results.append(r.payload)
+    return results
+evaluate_results = evaluate(ground_truth=ground_truth, search_function=search_function)
+print(evaluate_results['mrr'])
 # %%
 # Question 5. Average cosine (1 point)
+
+import numpy as np
+
+def cosine(u, v):
+    u_norm = np.sqrt(u.dot(u))
+    v_norm = np.sqrt(v.dot(v))
+    return u.dot(v) / (u_norm * v_norm)
+
+results_url = url_prefix + 'rag_evaluation/data/results-gpt4o-mini.csv'
+df_results = pd.read_csv(results_url)
+
+pipeline = make_pipeline(
+    TfidfVectorizer(min_df=3),
+    TruncatedSVD(n_components=128, random_state=1)
+)
+
+pipeline.fit(df_results.answer_llm + ' ' + df_results.answer_orig + ' ' + df_results.question)
+
+# Create empty list to store similarities
+cosines = []
+
+# Loop over all rows
+for _, row in df_results.iterrows():
+    # Get vector embeddings
+    v_llm = pipeline.transform([row['answer_llm']])[0]
+    v_orig = pipeline.transform([row['answer_orig']])[0]
+    
+    # Compute cosine similarity
+    sim = cosine(v_llm, v_orig)
+    cosines.append(sim)
+
+average_cosine = np.mean(cosines)
+print(average_cosine)
 # %%
 # Question 6. Average Rouge-1 F1 (1 point)
+
+# !pip install rouge
+from rouge import Rouge
+rouge_scorer = Rouge()
+
+r = df_results.iloc[10]
+scores = rouge_scorer.get_scores(r.answer_llm, r.answer_orig)[0]
+
+# Create empty list to store rouge scores
+scores = []
+
+# Loop over all rows
+for _, row in df_results.iterrows():
+    rouge_1_f1 = rouge_scorer.get_scores(row['answer_llm'], row['answer_orig'])[0]['rouge-1']['f']
+    scores.append(rouge_1_f1)
+
+average_scores = np.mean(scores)
+print(float(np.mean(scores)))
+# %%
