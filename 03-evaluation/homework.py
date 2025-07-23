@@ -277,3 +277,70 @@ for _, row in df_results.iterrows():
 average_scores = np.mean(scores)
 print(float(np.mean(scores)))
 # %%
+# Extra: Histogram - Cosine Similarity of Answers
+
+# Shows the distribution of how semantically close the LLM answers are to the originals.
+# A histogram makes it easy to communicate how well the LLM output aligns with expectations.
+# Added a vertical line for the average cosine to highlight performance center.
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import TruncatedSVD
+from sklearn.pipeline import make_pipeline
+
+# Vectorize + project answers
+pipeline = make_pipeline(
+    TfidfVectorizer(min_df=3),
+    TruncatedSVD(n_components=128, random_state=1)
+)
+pipeline.fit(df_results.answer_llm + ' ' + df_results.answer_orig + ' ' + df_results.question)
+
+# Compute cosine similarities
+cosines = []
+for _, row in df_results.iterrows():
+    v1 = pipeline.transform([row['answer_llm']])[0]
+    v2 = pipeline.transform([row['answer_orig']])[0]
+    cosines.append(cosine(v1, v2))
+
+# Plot
+plt.figure(figsize=(10, 6))
+plt.hist(cosines, bins=30, color="#4c72b0", edgecolor="black", alpha=0.8)
+plt.axvline(np.mean(cosines), color='red', linestyle='--', label=f'Avg = {np.mean(cosines):.2f}')
+plt.title("Cosine Similarity: LLM vs Ground Truth", fontsize=14)
+plt.xlabel("Cosine Similarity")
+plt.ylabel("Count")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+# %%
+# Extra: Scatter Plot - Cosine vs. ROUGE-1 F1
+
+# Shows the relationship between semantic similarity (cosine) and lexical overlap (ROUGE) for each answer pair.
+
+from rouge import Rouge
+
+rouge_scorer = Rouge()
+
+# Compute similarities
+cosines = []
+rouge_f1_scores = []
+
+for _, row in df_results.iterrows():
+    v_llm = pipeline.transform([row['answer_llm']])[0]
+    v_orig = pipeline.transform([row['answer_orig']])[0]
+    cosines.append(cosine(v_llm, v_orig))
+    rouge_f1 = rouge_scorer.get_scores(row['answer_llm'], row['answer_orig'])[0]['rouge-1']['f']
+    rouge_f1_scores.append(rouge_f1)
+
+# Plot
+plt.figure(figsize=(10, 6))
+plt.scatter(cosines, rouge_f1_scores, alpha=0.6, color="#2ca02c", edgecolors='k')
+plt.title("Cosine Similarity vs ROUGE-1 F1", fontsize=14)
+plt.xlabel("Cosine Similarity")
+plt.ylabel("ROUGE-1 F1 Score")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
